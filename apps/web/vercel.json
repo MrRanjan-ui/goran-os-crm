@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd ../.. && npm run -w @goran-os/shared build && npm run -w @goran-os/web build",
+  "outputDirectory": ".next"
+}

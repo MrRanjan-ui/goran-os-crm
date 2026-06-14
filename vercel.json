@@ -1,4 +1,0 @@
-{
-  "buildCommand": "npm run -w @goran-os/shared build && npm run -w @goran-os/web build",
-  "outputDirectory": "apps/web/.next"
-}
