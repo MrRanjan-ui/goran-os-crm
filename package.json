@@ -1,0 +1,17 @@
+{
+  "name": "goran-os",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run -w @goran-os/api dev\" \"npm run -w @goran-os/web dev\"",
+    "build": "npm run -w @goran-os/shared build && npm run -w @goran-os/api build && npm run -w @goran-os/web build",
+    "seed": "npm run -w @goran-os/api seed",
+    "lint": "npm run -w @goran-os/api lint && npm run -w @goran-os/web lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
