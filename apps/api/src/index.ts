@@ -18,7 +18,12 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
-await connectDatabase();
+try {
+  await connectDatabase();
+  console.log("Database connected successfully");
+} catch (error) {
+  console.error("Database connection failed:", error);
+}
 
 server.listen(env.PORT, () => {
   console.log(`GoRan OS API listening on :${env.PORT}`);
