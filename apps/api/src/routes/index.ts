@@ -17,6 +17,7 @@ import { webhooksRouter } from "./webhooks.js";
 import { dashboardRouter } from "./dashboard.js";
 import { uploadsRouter, downloadFile } from "./uploads.js";
 import { aiLogsRouter } from "./aiLogs.js";
+import { calendarRouter } from "./calendar.js";
 
 export const routes = Router();
 
@@ -48,3 +49,4 @@ routes.use("/automations", automationsRouter);
 routes.use("/ai", aiRouter);
 routes.use("/ai-logs", aiLogsRouter);
 routes.use("/uploads", uploadsRouter);
+routes.use("/calendar", calendarRouter);

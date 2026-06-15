@@ -65,7 +65,9 @@ export const ProjectSchema = BaseEntity.extend({
   billingType: z.enum(["one-time", "recurring", "both"]).default("one-time"),
   developmentCharge: z.number().nonnegative().optional(),
   recurringFee: z.number().nonnegative().optional(),
-  recurringInterval: z.enum(["monthly", "yearly"]).optional()
+  recurringInterval: z.enum(["monthly", "yearly"]).optional(),
+  recurringPaymentDate: z.string().optional(),
+  recurringPaymentStatus: z.enum(["Pending", "Paid"]).optional()
 });
 export type Project = z.infer<typeof ProjectSchema>;
 

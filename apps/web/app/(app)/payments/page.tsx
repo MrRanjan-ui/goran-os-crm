@@ -13,7 +13,7 @@ import { Input, Label, Select } from "@/components/ui/Forms";
 import { Modal } from "@/components/ui/Modal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  DollarSign,
+  IndianRupee,
   Plus,
   Search,
   AlertCircle,
@@ -30,7 +30,7 @@ type Invoice = {
   projectId?: string;
   amount: number;
   currency: string;
-  status: "Draft" | "Sent" | "Paid" | "Overdue";
+  status: "Draft" | "Sent" | "Due" | "Paid" | "Overdue";
   dueDate?: string;
   billingType?: "one-time" | "recurring";
   paymentCategory?: "development_charge" | "recurring_fee" | "other";
@@ -86,9 +86,9 @@ type Transaction =
     };
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0
   }).format(amount);
 }
@@ -106,6 +106,7 @@ function getStatusBadge(status: string) {
   const styles: Record<string, string> = {
     Draft: "bg-white/5 text-white/50 border-white/10",
     Sent: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    Due: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     Paid: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     Overdue: "bg-rose-500/10 text-rose-400 border-rose-500/20"
   };
@@ -131,7 +132,7 @@ export default function PaymentsPage() {
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [inflowAmount, setInflowAmount] = useState("");
-  const [inflowStatus, setInflowStatus] = useState<"Draft" | "Sent" | "Paid">("Sent");
+  const [inflowStatus, setInflowStatus] = useState<"Draft" | "Sent" | "Due" | "Paid" | "Overdue">("Due");
   const [inflowCategory, setInflowCategory] = useState<"development_charge" | "recurring_fee" | "other">("development_charge");
   const [inflowDueDate, setInflowDueDate] = useState("");
   const [billingPeriod, setBillingPeriod] = useState("");
@@ -245,7 +246,7 @@ export default function PaymentsPage() {
     setSelectedClientId("");
     setSelectedProjectId("");
     setInflowAmount("");
-    setInflowStatus("Sent");
+    setInflowStatus("Due");
     setInflowCategory("development_charge");
     setInflowDueDate("");
     setBillingPeriod("");
@@ -279,7 +280,7 @@ export default function PaymentsPage() {
           clientId: selectedClientId,
           projectId: selectedProjectId || undefined,
           amount: amt,
-          currency: "USD",
+          currency: "INR",
           status: inflowStatus,
           dueDate: inflowDueDate || undefined,
           paymentCategory: inflowCategory,
@@ -302,7 +303,7 @@ export default function PaymentsPage() {
         await createExpenseMutation.mutateAsync({
           vendor: outflowVendor.trim(),
           amount: amt,
-          currency: "USD",
+          currency: "INR",
           category: outflowCategory || "Other",
           incurredOn: outflowIncurredDate || undefined,
           description: outflowDescription.trim() || undefined
@@ -428,7 +429,7 @@ export default function PaymentsPage() {
           <div className="flex items-center justify-between">
             <span className="text-white/40 text-xs font-semibold">Net profit</span>
             <div className="h-7 w-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-              <DollarSign className="h-4 w-4" />
+              <IndianRupee className="h-4 w-4" />
             </div>
           </div>
           <span className={`text-2xl font-bold mt-3 ${netProfit >= 0 ? "text-indigo-400" : "text-rose-400"}`}>
@@ -499,6 +500,7 @@ export default function PaymentsPage() {
             >
               <option value="All">All Statuses</option>
               <option value="Paid">Paid</option>
+              <option value="Due">Due</option>
               <option value="Sent">Sent</option>
               <option value="Overdue">Overdue</option>
               <option value="Draft">Draft</option>
@@ -637,9 +639,10 @@ export default function PaymentsPage() {
                                 onChange={(e) => updateStatusMutation.mutate({ id: tx.id, status: e.target.value })}
                                 className="h-8 py-0.5 text-[10px] bg-black/40 border border-white/10 text-white min-w-[85px]"
                               >
+                                <option value="Due">Due</option>
+                                <option value="Paid">Paid</option>
                                 <option value="Draft">Draft</option>
                                 <option value="Sent">Sent</option>
-                                <option value="Paid">Paid</option>
                                 <option value="Overdue">Overdue</option>
                               </Select>
 
@@ -806,9 +809,10 @@ export default function PaymentsPage() {
                         value={inflowStatus}
                         onChange={(e) => setInflowStatus(e.target.value as any)}
                       >
-                        <option value="Draft">Draft</option>
-                        <option value="Sent">Sent (Unpaid)</option>
+                        <option value="Due">Due (Unpaid)</option>
                         <option value="Paid">Paid (Settled)</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Sent">Sent</option>
                       </Select>
                     </div>
                   </div>

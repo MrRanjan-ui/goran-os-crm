@@ -15,6 +15,8 @@ export interface ProjectDocument extends mongoose.Document {
   developmentCharge?: number;
   recurringFee?: number;
   recurringInterval?: string;
+  recurringPaymentDate?: Date;
+  recurringPaymentStatus?: string;
 }
 
 const ProjectSchema = withBase({
@@ -30,7 +32,9 @@ const ProjectSchema = withBase({
   billingType: { type: String, enum: ["one-time", "recurring", "both"], default: "one-time" },
   developmentCharge: { type: Number },
   recurringFee: { type: Number },
-  recurringInterval: { type: String, enum: ["monthly", "yearly"] }
+  recurringInterval: { type: String, enum: ["monthly", "yearly"] },
+  recurringPaymentDate: { type: Date },
+  recurringPaymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending" }
 });
 
 export const ProjectModel =

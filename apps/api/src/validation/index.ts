@@ -53,7 +53,9 @@ export const createProjectSchema = z.object({
   billingType: z.enum(["one-time", "recurring", "both"]).optional(),
   developmentCharge: z.number().nonnegative().optional(),
   recurringFee: z.number().nonnegative().optional(),
-  recurringInterval: z.enum(["monthly", "yearly"]).optional()
+  recurringInterval: z.enum(["monthly", "yearly"]).optional(),
+  recurringPaymentDate: z.string().optional(),
+  recurringPaymentStatus: z.enum(["Pending", "Paid"]).optional()
 });
 export const updateProjectSchema = createProjectSchema.partial();
 
@@ -106,7 +108,8 @@ export const createMeetingSchema = z.object({
   title: z.string(),
   clientId: z.string().optional(),
   scheduledAt: z.string(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  meetingLink: z.string().optional()
 });
 export const updateMeetingSchema = createMeetingSchema.partial();
 

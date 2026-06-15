@@ -14,7 +14,7 @@ import {
   Trash2,
   CheckSquare,
   Square,
-  DollarSign,
+  IndianRupee,
   Briefcase,
   ListTodo,
   CheckCircle2
@@ -43,7 +43,7 @@ type Invoice = {
   projectId?: string;
   amount: number;
   currency: string;
-  status: "Draft" | "Sent" | "Paid" | "Overdue";
+  status: "Draft" | "Sent" | "Due" | "Paid" | "Overdue";
   dueDate?: string;
 };
 
@@ -59,7 +59,7 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("Medium");
   const [newInvoiceAmount, setNewInvoiceAmount] = useState("");
-  const [newInvoiceStatus, setNewInvoiceStatus] = useState("Sent");
+  const [newInvoiceStatus, setNewInvoiceStatus] = useState("Due");
   const [newInvoiceDueDate, setNewInvoiceDueDate] = useState("");
 
   // Fetch Tasks for this project
@@ -222,7 +222,7 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
       amount,
       status: newInvoiceStatus,
       dueDate: newInvoiceDueDate || undefined,
-      currency: "USD"
+      currency: "INR"
     });
     setNewInvoiceAmount("");
     setNewInvoiceDueDate("");
@@ -283,23 +283,23 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
               <div>
                 <span className="text-white/40 block text-xs">Project Budget</span>
                 <span className="text-white font-semibold text-base mt-0.5 block">
-                  {project.budget ? `$${project.budget.toLocaleString()}` : "Not Set"}
+                  {project.budget ? `₹${project.budget.toLocaleString()}` : "Not Set"}
                 </span>
                 <span className="text-[10px] text-white/30">Contract value</span>
               </div>
               <div>
                 <span className="text-white/40 block text-xs">Total Invoiced</span>
                 <span className="text-white font-semibold text-base mt-0.5 block text-blue-400">
-                  {totalInvoiced ? `$${totalInvoiced.toLocaleString()}` : "$0"}
+                  {totalInvoiced ? `₹${totalInvoiced.toLocaleString()}` : "₹0"}
                 </span>
                 <span className="text-[10px] text-emerald-400">
-                  {totalPaid ? `$${totalPaid.toLocaleString()} paid` : "$0 paid"}
+                  {totalPaid ? `₹${totalPaid.toLocaleString()} paid` : "₹0 paid"}
                 </span>
               </div>
               <div>
                 <span className="text-white/40 block text-xs">Pending Payments</span>
                 <span className="text-white font-semibold text-base mt-0.5 block text-rose-400">
-                  {totalPending ? `$${totalPending.toLocaleString()}` : "$0"}
+                  {totalPending ? `₹${totalPending.toLocaleString()}` : "₹0"}
                 </span>
                 <span className="text-[10px] text-white/30">Outstanding collections</span>
               </div>
@@ -310,7 +310,7 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
               {[
                 { id: "scope", label: "Scope & Deliverables", icon: Briefcase },
                 { id: "tasks", label: `Tasks & Progress (${totalTasks})`, icon: ListTodo },
-                { id: "billing", label: `Billing & Payments`, icon: DollarSign }
+                { id: "billing", label: `Billing & Payments`, icon: IndianRupee }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -568,9 +568,10 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
                             onChange={e => setNewInvoiceStatus(e.target.value)}
                             className="h-9 text-xs"
                           >
+                            <option value="Due">Due</option>
+                            <option value="Paid">Paid</option>
                             <option value="Draft">Draft</option>
                             <option value="Sent">Sent</option>
-                            <option value="Paid">Paid</option>
                             <option value="Overdue">Overdue</option>
                           </Select>
                         </div>
@@ -613,11 +614,11 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
                             >
                               <div className="flex items-center gap-3">
                                 <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                                  <DollarSign className="h-4 w-4 text-blue-400" />
+                                  <IndianRupee className="h-4 w-4 text-blue-400" />
                                 </div>
                                 <div>
                                   <span className="text-sm text-white font-semibold">
-                                    ${inv.amount.toLocaleString()} {inv.currency}
+                                    ₹{inv.amount.toLocaleString()} INR
                                   </span>
                                   <span className="text-[10px] text-white/40 block">
                                     Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "No Date"}
@@ -628,7 +629,7 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
                               <div className="flex items-center gap-3 self-end sm:self-center">
                                 <Badge className={`text-[10px] px-2 py-0.5 border ${
                                   inv.status === "Paid" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                                  inv.status === "Sent" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                                  (inv.status === "Sent" || inv.status === "Due") ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
                                   inv.status === "Overdue" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
                                   "bg-white/5 text-white/50 border-white/10"
                                 }`}>
@@ -640,9 +641,10 @@ export function ProjectDetailModal({ isOpen, onClose, project, clientName }: Pro
                                   onChange={e => handleInvoiceStatusChange(inv._id, e.target.value)}
                                   className="h-8 py-0.5 text-[11px] bg-black/40 border border-white/5 text-white"
                                 >
+                                  <option value="Due">Due</option>
+                                  <option value="Paid">Paid</option>
                                   <option value="Draft">Draft</option>
                                   <option value="Sent">Sent</option>
-                                  <option value="Paid">Paid</option>
                                   <option value="Overdue">Overdue</option>
                                 </Select>
                               </div>

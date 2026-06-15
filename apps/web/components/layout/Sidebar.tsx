@@ -10,7 +10,8 @@ import {
   Bot,
   MessageCircle,
   Bell,
-  DollarSign
+  IndianRupee,
+  CalendarDays
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +20,8 @@ const navItems = [
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/clients", label: "Clients", icon: Briefcase },
   { href: "/projects", label: "Projects", icon: Kanban },
-  { href: "/payments", label: "Payments", icon: DollarSign },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/payments", label: "Payments", icon: IndianRupee },
   { href: "/finance", label: "Finance", icon: Wallet },
   { href: "/employees", label: "Employees", icon: UserRound },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenCheck },

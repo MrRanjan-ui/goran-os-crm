@@ -7,6 +7,7 @@ export interface MeetingDocument extends mongoose.Document {
   scheduledAt: Date;
   notes?: string;
   aiSummary?: string;
+  meetingLink?: string;
 }
 
 const MeetingSchema = withBase({
@@ -14,7 +15,8 @@ const MeetingSchema = withBase({
   clientId: { type: String },
   scheduledAt: { type: Date, required: true },
   notes: { type: String },
-  aiSummary: { type: String }
+  aiSummary: { type: String },
+  meetingLink: { type: String }
 });
 
 export const MeetingModel =

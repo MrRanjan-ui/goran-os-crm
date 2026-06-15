@@ -15,7 +15,9 @@ const EnvSchema = z.object({
   CLOUDINARY_API_KEY: z.string().default(""),
   CLOUDINARY_API_SECRET: z.string().default(""),
   N8N_WEBHOOK_SECRET: z.string().default("default-secret"),
-  DEFAULT_USER_ROLE: z.string().default("owner")
+  DEFAULT_USER_ROLE: z.string().default("owner"),
+  CALCOM_API_KEY: z.string().optional(),
+  CALCOM_EVENT_LINK: z.string().optional()
 });
 
 export const env = EnvSchema.parse(process.env);

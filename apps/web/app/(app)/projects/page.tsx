@@ -27,6 +27,8 @@ type Project = {
   developmentCharge?: number;
   recurringFee?: number;
   recurringInterval?: string;
+  recurringPaymentDate?: string;
+  recurringPaymentStatus?: string;
 };
 
 type ProjectsResponse = {
@@ -43,10 +45,10 @@ type ClientsResponse = {
 };
 
 function formatCurrency(amount?: number) {
-  if (amount === undefined) return "$0";
-  return new Intl.NumberFormat("en-US", {
+  if (amount === undefined) return "₹0";
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0
   }).format(amount);
 }

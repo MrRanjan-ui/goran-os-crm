@@ -40,7 +40,13 @@ type DashboardSummary = {
     pendingInvoices: number;
     employeeCount: number;
     recentActivities: Array<{ title: string; message: string; createdAt: string }>;
-    upcomingMeetings: Array<{ title: string; scheduledAt: string }>;
+    upcomingMeetings: Array<{ 
+      id: string;
+      title: string; 
+      scheduledAt: string;
+      meetingLink?: string | null;
+      type?: string;
+    }>;
   };
 };
 
@@ -59,7 +65,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               <span className="text-white/70">{entry.name}:</span>
             </span>
             <span className="font-semibold text-white">
-              ${entry.value.toLocaleString()}
+              ₹{entry.value.toLocaleString()}
             </span>
           </div>
         ))}
@@ -72,6 +78,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function DashboardPage() {
   const { getToken } = useAuth();
   const [mounted, setMounted] = React.useState(false);
+
+  const getMeetingUrgency = (scheduledAt: string) => {
+    const diffMs = new Date(scheduledAt).getTime() - new Date().getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 0) return "past";
+    if (diffHours <= 24) return "critical"; // Next 24 hours
+    if (diffHours <= 72) return "warning";  // 2 to 3 days
+    return "normal";                         // 4 to 7 days
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -131,7 +147,7 @@ export default function DashboardPage() {
     },
     {
       label: "Monthly Revenue",
-      value: summary?.monthlyRevenue !== undefined ? `$${summary.monthlyRevenue.toLocaleString()}` : "$0",
+      value: summary?.monthlyRevenue !== undefined ? `₹${summary.monthlyRevenue.toLocaleString()}` : "₹0",
       trend: "+18.2% vs target",
       trendType: "up",
       icon: TrendingUp,
@@ -248,7 +264,7 @@ export default function DashboardPage() {
               <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-1.5">
                 <p className="text-[10px] text-white/40 font-medium uppercase tracking-wider">Monthly Expenses</p>
                 <p className="text-sm font-semibold text-rose-400">
-                  {summary?.monthlyExpenses !== undefined ? `$${summary.monthlyExpenses.toLocaleString()}` : "$0"}
+                  {summary?.monthlyExpenses !== undefined ? `₹${summary.monthlyExpenses.toLocaleString()}` : "₹0"}
                 </p>
               </div>
               <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-1.5">
@@ -351,11 +367,8 @@ export default function DashboardPage() {
                     Revenue Capture Opportunity
                   </span>
                   <p className="mt-1 text-xs text-white/70 leading-relaxed">
-                    There are {summary?.pendingInvoices ?? 0} pending invoices. Send automatic reminders to recover up to $1,200.
+                    There are {summary?.pendingInvoices ?? 0} pending invoices. Send automatic reminders to recover up to ₹1,200.
                   </p>
-                  <button className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-accent hover:underline font-medium">
-                    Automate Reminders <ArrowRight className="h-3 w-3" />
-                  </button>
                 </div>
 
                 <div className="rounded-lg bg-white/5 border border-white/5 p-3.5">
@@ -429,29 +442,71 @@ export default function DashboardPage() {
             </h3>
             
             <div className="space-y-3">
-              {(summary?.upcomingMeetings ?? []).map((meeting, index) => (
-                <div 
-                  key={`${meeting.title}-${index}`} 
-                  className="rounded-lg border border-white/5 bg-white/5 p-3 flex flex-col gap-2 hover:border-white/10 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-semibold text-white/90 leading-tight">
-                      {meeting.title}
-                    </span>
-                    <span className="text-[10px] text-accent font-medium px-2 py-0.5 rounded bg-accent/10 border border-accent/20 whitespace-nowrap">
-                      Join
-                    </span>
+              {(summary?.upcomingMeetings ?? []).map((meeting, index) => {
+                const urgency = getMeetingUrgency(meeting.scheduledAt);
+                const isUrgent = urgency === "critical";
+                const isSoon = urgency === "warning";
+
+                const cardStyles = cn(
+                  "rounded-lg border p-3 flex flex-col gap-2 transition-all hover:scale-[1.01]",
+                  isUrgent 
+                    ? "border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.05)]" 
+                    : isSoon
+                    ? "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50"
+                    : "border-white/5 bg-white/5 hover:border-white/10"
+                );
+
+                const badgeText = isUrgent ? "⚠️ Today" : isSoon ? "⏳ Soon" : "📅 Scheduled";
+                const badgeStyles = cn(
+                  "text-[9px] font-semibold px-2 py-0.5 rounded border uppercase shrink-0 whitespace-nowrap",
+                  isUrgent 
+                    ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
+                    : isSoon
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-white/5 text-white/50 border-white/10"
+                );
+
+                return (
+                  <div key={`${meeting.title}-${index}`} className={cardStyles}>
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-xs font-semibold text-white/90 leading-tight">
+                        {meeting.title}
+                      </span>
+                      <span className={badgeStyles}>
+                        {badgeText}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4 mt-1">
+                      <span className="text-[10px] text-white/50 font-mono">
+                        {new Date(meeting.scheduledAt).toLocaleString([], { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </span>
+                      {meeting.meetingLink ? (
+                        <a
+                          href={meeting.meetingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            "text-[10px] font-bold px-2.5 py-1 rounded transition-all flex items-center gap-1",
+                            isUrgent
+                              ? "bg-rose-500 text-white hover:bg-rose-600 shadow-[0_0_10px_rgba(244,63,94,0.3)]"
+                              : "bg-accent text-white hover:bg-accent/80"
+                          )}
+                        >
+                          Join
+                        </a>
+                      ) : (
+                        <span className="text-[9px] text-white/30 italic">Offline</span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[10px] text-white/50 font-mono">
-                    {new Date(meeting.scheduledAt).toLocaleString([], { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
               {!summary?.upcomingMeetings?.length && (
                 <p className="text-xs text-white/50">No meetings scheduled.</p>
               )}

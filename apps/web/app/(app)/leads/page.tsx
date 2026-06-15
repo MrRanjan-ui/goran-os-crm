@@ -28,10 +28,10 @@ type LeadsResponse = {
 const STAGES = ["New", "Contacted", "Discovery Call", "Proposal Sent", "Negotiation", "Won", "Lost"];
 
 function formatCurrency(amount?: number) {
-  if (amount === undefined) return "$0";
-  return new Intl.NumberFormat("en-US", {
+  if (amount === undefined) return "₹0";
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0
   }).format(amount);
 }

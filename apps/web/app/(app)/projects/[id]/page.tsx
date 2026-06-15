@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   Briefcase,
   ListTodo,
-  DollarSign,
+  IndianRupee,
   FileText,
   Plus,
   Trash2,
@@ -39,6 +39,8 @@ type Project = {
   developmentCharge?: number;
   recurringFee?: number;
   recurringInterval?: "monthly" | "yearly";
+  recurringPaymentDate?: string;
+  recurringPaymentStatus?: "Pending" | "Paid";
 };
 
 type Task = {
@@ -57,7 +59,7 @@ type Invoice = {
   projectId?: string;
   amount: number;
   currency: string;
-  status: "Draft" | "Sent" | "Paid" | "Overdue";
+  status: "Draft" | "Sent" | "Due" | "Paid" | "Overdue";
   dueDate?: string;
   billingType?: "one-time" | "recurring";
   paymentCategory?: "development_charge" | "recurring_fee" | "other";
@@ -83,10 +85,10 @@ type Client = {
 };
 
 function formatCurrency(amount?: number) {
-  if (amount === undefined) return "$0";
-  return new Intl.NumberFormat("en-US", {
+  if (amount === undefined) return "₹0";
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0
   }).format(amount);
 }
@@ -138,7 +140,7 @@ export default function ProjectDetailsPage() {
   // Invoice Form states
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [invoiceCategory, setInvoiceCategory] = useState<"development_charge" | "recurring_fee" | "other">("development_charge");
-  const [invoiceStatus, setInvoiceStatus] = useState<"Draft" | "Sent" | "Paid">("Sent");
+  const [invoiceStatus, setInvoiceStatus] = useState<"Draft" | "Sent" | "Due" | "Paid">("Due");
   const [invoiceDueDate, setInvoiceDueDate] = useState("");
   const [invoicePeriod, setInvoicePeriod] = useState("");
 
@@ -311,7 +313,7 @@ export default function ProjectDetailsPage() {
       amount,
       status: invoiceStatus,
       dueDate: invoiceDueDate || undefined,
-      currency: "USD",
+      currency: "INR",
       billingType: invoiceCategory === "recurring_fee" ? "recurring" : "one-time",
       paymentCategory: invoiceCategory,
       recurringInterval: invoiceCategory === "recurring_fee" ? project.recurringInterval : undefined,
@@ -479,7 +481,7 @@ export default function ProjectDetailsPage() {
       <div className="flex border-b border-white/5 pb-px gap-4">
         {[
           { id: "tasks", label: `Tasks & Progress (${totalTasks})`, icon: ListTodo },
-          { id: "billing", label: "Billing & Invoices", icon: DollarSign },
+          { id: "billing", label: "Billing & Invoices", icon: IndianRupee },
           { id: "documents", label: `Documents (${documents.length})`, icon: FileText }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -648,7 +650,7 @@ export default function ProjectDetailsPage() {
               className="space-y-6"
             >
               {/* Billing Configuration Detail Panel */}
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="p-4 border-accent/20 bg-accent/5">
                   <h4 className="text-xs text-white/50 uppercase font-semibold">Active Billing Model</h4>
                   <span className="text-lg font-bold text-white mt-1 block capitalize">
@@ -670,6 +672,23 @@ export default function ProjectDetailsPage() {
                     <span className="text-lg font-bold text-white mt-1 block">
                       {project.recurringFee ? `${formatCurrency(project.recurringFee)} / ${project.recurringInterval}` : "Not Configured"}
                     </span>
+                  </Card>
+                )}
+                {(project.billingType === "recurring" || project.billingType === "both") && (
+                  <Card className="p-4">
+                    <h4 className="text-xs text-white/50 uppercase font-semibold">Next Retainer Payment</h4>
+                    <span className="text-lg font-bold text-white mt-1 block">
+                      {project.recurringPaymentDate ? formatDate(project.recurringPaymentDate) : "Not Configured"}
+                    </span>
+                    {project.recurringPaymentDate && (
+                      <span className={`text-[10px] font-semibold mt-1.5 inline-block ${
+                        project.recurringPaymentStatus === "Paid" ? "text-emerald-400" :
+                        new Date(project.recurringPaymentDate) < new Date() ? "text-rose-400 font-bold animate-pulse" : "text-amber-400"
+                      }`}>
+                        {project.recurringPaymentStatus === "Paid" ? "✅ Paid" :
+                         new Date(project.recurringPaymentDate) < new Date() ? "⚠️ Overdue (Pending)" : "⏳ Pending"}
+                      </span>
+                    )}
                   </Card>
                 )}
               </div>
@@ -739,9 +758,10 @@ export default function ProjectDetailsPage() {
                       onChange={e => setInvoiceStatus(e.target.value as any)}
                       className="h-9 text-xs"
                     >
+                      <option value="Due">Due</option>
+                      <option value="Paid">Paid</option>
                       <option value="Draft">Draft</option>
                       <option value="Sent">Sent</option>
-                      <option value="Paid">Paid</option>
                     </Select>
                   </div>
 
@@ -773,11 +793,11 @@ export default function ProjectDetailsPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <DollarSign className="h-4 w-4 text-blue-400" />
+                            <IndianRupee className="h-4 w-4 text-blue-400" />
                           </div>
                           <div>
                             <span className="text-sm text-white font-semibold">
-                              {formatCurrency(inv.amount)} {inv.currency}
+                              {formatCurrency(inv.amount)}
                             </span>
                             <div className="flex flex-wrap gap-2 items-center mt-0.5">
                               <Badge className="bg-white/5 text-white/50 border border-white/10 text-[9px] px-1 py-px capitalize">
@@ -796,7 +816,7 @@ export default function ProjectDetailsPage() {
                         <div className="flex items-center gap-3 self-end sm:self-center">
                           <Badge className={`text-[10px] px-2 py-0.5 border ${
                             inv.status === "Paid" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                            inv.status === "Sent" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                            (inv.status === "Sent" || inv.status === "Due") ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
                             inv.status === "Overdue" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
                             "bg-white/5 text-white/50 border-white/10"
                           }`}>
@@ -812,9 +832,10 @@ export default function ProjectDetailsPage() {
                             }}
                             className="h-8 py-0.5 text-[11px] bg-black/40 border border-white/5 text-white"
                           >
+                            <option value="Due">Due</option>
+                            <option value="Paid">Paid</option>
                             <option value="Draft">Draft</option>
                             <option value="Sent">Sent</option>
-                            <option value="Paid">Paid</option>
                             <option value="Overdue">Overdue</option>
                           </Select>
                         </div>

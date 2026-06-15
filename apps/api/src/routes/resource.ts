@@ -14,6 +14,8 @@ interface CrudOptions<T> {
   createSchema: z.ZodSchema;
   updateSchema: z.ZodSchema;
   searchFields?: string[];
+  postCreate?: (item: any, req: any) => Promise<void>;
+  postUpdate?: (item: any, req: any) => Promise<void>;
 }
 
 export function createCrudRouter<T>({
@@ -21,7 +23,9 @@ export function createCrudRouter<T>({
   resourceName,
   createSchema,
   updateSchema,
-  searchFields = []
+  searchFields = [],
+  postCreate,
+  postUpdate
 }: CrudOptions<T>) {
   const router = Router();
 
@@ -84,6 +88,13 @@ export function createCrudRouter<T>({
         createdBy,
         updatedBy: createdBy
       });
+      if (postCreate) {
+        try {
+          await postCreate(item, req);
+        } catch (hookErr) {
+          console.error(`Error in postCreate hook for ${resourceName}:`, hookErr);
+        }
+      }
       res.status(201).json({ data: item });
     } catch (err) {
       next(err);
@@ -102,6 +113,13 @@ export function createCrudRouter<T>({
       if (!item) {
         res.status(404).json({ error: `${resourceName} not found` });
         return;
+      }
+      if (postUpdate) {
+        try {
+          await postUpdate(item, req);
+        } catch (hookErr) {
+          console.error(`Error in postUpdate hook for ${resourceName}:`, hookErr);
+        }
       }
       res.json({ data: item });
     } catch (err) {

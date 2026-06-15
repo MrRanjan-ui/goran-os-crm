@@ -25,7 +25,9 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
     billingType: "one-time",
     developmentCharge: "",
     recurringFee: "",
-    recurringInterval: "monthly"
+    recurringInterval: "monthly",
+    recurringPaymentDate: "",
+    recurringPaymentStatus: "Pending"
   });
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +44,9 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
         billingType: project.billingType || "one-time",
         developmentCharge: project.developmentCharge ? String(project.developmentCharge) : "",
         recurringFee: project.recurringFee ? String(project.recurringFee) : "",
-        recurringInterval: project.recurringInterval || "monthly"
+        recurringInterval: project.recurringInterval || "monthly",
+        recurringPaymentDate: project.recurringPaymentDate ? new Date(project.recurringPaymentDate).toISOString().split('T')[0] : "",
+        recurringPaymentStatus: project.recurringPaymentStatus || "Pending"
       });
     } else if (isOpen) {
       setFormData({
@@ -56,7 +60,9 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
         billingType: "one-time",
         developmentCharge: "",
         recurringFee: "",
-        recurringInterval: "monthly"
+        recurringInterval: "monthly",
+        recurringPaymentDate: "",
+        recurringPaymentStatus: "Pending"
       });
     }
   }, [project, isOpen, clients]);
@@ -81,6 +87,8 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
       if (formData.billingType === "recurring" || formData.billingType === "both") {
         if (formData.recurringFee) payload.recurringFee = Number(formData.recurringFee);
         if (formData.recurringInterval) payload.recurringInterval = formData.recurringInterval;
+        if (formData.recurringPaymentDate) payload.recurringPaymentDate = formData.recurringPaymentDate;
+        payload.recurringPaymentStatus = formData.recurringPaymentStatus;
       }
       
       await onSubmit(payload);
@@ -186,7 +194,7 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
         <div className="grid grid-cols-2 gap-4">
           {(formData.billingType === "one-time" || formData.billingType === "both") && (
             <div className="space-y-2">
-              <Label htmlFor="developmentCharge">Development Charge ($)</Label>
+              <Label htmlFor="developmentCharge">Development Charge (₹)</Label>
               <Input 
                 id="developmentCharge" 
                 type="number" 
@@ -200,7 +208,7 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
 
           {(formData.billingType === "recurring" || formData.billingType === "both") && (
             <div className="space-y-2">
-              <Label htmlFor="recurringFee">Recurring Fee ($)</Label>
+              <Label htmlFor="recurringFee">Recurring Fee (₹)</Label>
               <Input 
                 id="recurringFee" 
                 type="number" 
@@ -213,8 +221,35 @@ export function ProjectModal({ isOpen, onClose, project, clients, onSubmit }: Pr
           )}
         </div>
 
+        {(formData.billingType === "recurring" || formData.billingType === "both") && (
+          <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="recurringPaymentDate">Recurring Payment Date</Label>
+              <Input 
+                id="recurringPaymentDate" 
+                type="date" 
+                required
+                value={formData.recurringPaymentDate} 
+                onChange={e => setFormData({ ...formData, recurringPaymentDate: e.target.value })} 
+                className="text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="recurringPaymentStatus">Recurring Payment Status</Label>
+              <Select 
+                id="recurringPaymentStatus" 
+                value={formData.recurringPaymentStatus}
+                onChange={e => setFormData({ ...formData, recurringPaymentStatus: e.target.value })}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+              </Select>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2 border-t border-white/5 pt-4">
-          <Label htmlFor="budget">Total Allocated Budget ($)</Label>
+          <Label htmlFor="budget">Total Allocated Budget (₹)</Label>
           <Input 
             id="budget" 
             type="number" 
